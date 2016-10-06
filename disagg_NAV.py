@@ -12,14 +12,9 @@
 
 
 import sys, json
-from statistics import mean
-from time import time, sleep
+from time import time
 from datetime import datetime
-from libDataLoaders import dataset_loader
-from libFolding import Folding
 from libSSHMM import SuperStateHMM
-from libAccuracy import Accuracy
-import xml.etree.ElementTree as et
 import pandas
 
 print()
@@ -53,6 +48,7 @@ datasets_dir = './datasets/%s.csv'
 datafile_dir = './for_dissag/%s.csv'
 logs_dir = './logs/%s.log'
 models_dir = './models/%s.json'
+csv_dir = './csvs/%s.csv'
 
 print()
 print('Loading saved model %s from JSON storage (%s)...' % (modeldb, models_dir % modeldb))
@@ -81,64 +77,55 @@ del jdata
 labels = sshmm.labels
 print('\tModel lables are: ', labels)
 
-print()
-print('Testing %s algorithm load disagg...' % algo_name)
-acc = Accuracy(len(labels), folds)
+timestamp_col = 'TimeStamp'
+agg_meter_col = 'WHE'
 
-#==============================================================================
-# print()
-# print('Connecting to EMU2 on %s...' % (device))
-# emu2 = serial.Serial(dev, 115200, timeout=1)
-#==============================================================================
+print('Loading the %s data' % datafile)   # read in the aggregate data
+df = pandas.read_csv(datafile_dir % datafile) 
 
-y0 = y1 = -1
+print('\tSetting timestamp column %s as index.' % timestamp_col)
+df = df.set_index(timestamp_col)
 
-while True:
-    timestamp_col = 'TimeStamp'
-    agg_meter_col = 'WHE'
-    
-    print('Loading the %s data' % datafile)   # read in the aggregate data
-    df = pandas.read_csv(datafile_dir % datafile) 
-    
-    print('\tSetting timestamp column %s as index.' % timestamp_col)
-    df = df.set_index(timestamp_col)
-    
-    print('\tModfity data with precision %d then convert to int...' % precision)
-    for col in list(df):
-        df[col] = df[col] * precision
-        df[col] = df[col].astype(int)
+print('\tModfity data with precision %d then convert to int...' % precision)
+for col in list(df):
+    df[col] = df[col] * precision
+    df[col] = df[col].astype(int)
         
-    power = df[agg_meter_col]
+obs = list(df[agg_meter_col])
       
-    y0 = y1
-    y1 = power
-    if y0 == -1:
-        y0 = y1
-   
-    print(y0.head())   
-    print(y1.head())  
-   
+# We create and empty output matrix      
+y_out = pandas.DataFrame(columns = labels)
+
+print("Performing the disaggregation...")
+# The next four lines are for record-keeping
+indv_tm_sum = 0.0
+indv_count = 0
+pbar = ''
+pbar_incro = len(obs) // 20
+for i in range(1, len(obs)):
+    
+    y0 = obs[i - 1]
+    y1 = obs[i]
+    
     start = time() 
     (p, k, Pt, cdone, ctotal) = disagg_algo(sshmm, [y0, y1])
     elapsed = (time() - start)
 
     s_est = sshmm.detangle_k(k)
     y_est = sshmm.y_estimate(s_est, breakdown=True)
-        
-    y_true = hidden[i]
-    s_true = sshmm.obs_to_bins(y_true)
 
-    acc.classification_result(fold, s_est, s_true, sshmm.Km)
-    acc.measurement_result(fold, y_est, y_true)
-        
-    unseen = 'no'
-    if p == 0.0:
-       unseen = 'yes'
-              
-    y_noise = round(y1 - sum(y_true), 1)
-        
-    fscore = acc.fs_fscore()
-    estacc = acc.estacc()
-    scp = sum([i != j for (i, j) in list(zip(hidden[i - 1], hidden[i]))])
-    print('Obs %5d%s Δ %4d%s | SCP %2d | FS-fscore %.4f | Est.Acc. %.4f | Time %7.3fms' % (y1, measure, y1 - y0, measure, scp, fscore, estacc, elapsed * 1000))
+    y_out = y_out.append(pandas.DataFrame([y_est], columns=labels))
+    
+    indv_tm_sum += elapsed
+    indv_count += 1
+    
+    if not i % pbar_incro or i == 1:
+        pbar += '=' #if i > 1 else ''
+        disagg_rate = float(indv_tm_sum) / float(indv_count)
+        print('\r\tProgress: [%-20s], Disagg rate: %12.6f sec/sample ' % (pbar[:20], disagg_rate), end='', flush=True)
+        sys.stdout.flush()
 
+print("Writing out .csv with disaggregated results: ", csv_dir % modeldb, ".csv")
+y_out.to_csv(csv_dir % modeldb)
+
+    
