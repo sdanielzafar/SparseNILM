@@ -13,7 +13,7 @@ from libFolding import Folding
 from libPMF import EmpiricalPMF
 from libSSHMM import SuperStateHMM, frange
 
-ε = 0.00021 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
+sp_e = 0.00021 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
 
 print()
 print('----------------------------------------------------------------------------------------------------------------')
@@ -65,7 +65,7 @@ for (fold, priors, testing) in folds:
     pmfs = []
     for id in ids:
         pmfs.append(EmpiricalPMF(id, max_obs * precision, list(priors[id])))
-        pmfs[-1].quantize(max_states, ε)
+        pmfs[-1].quantize(max_states, sp_e)
 
     print()
     print('Creating compressed SSHMM...')
