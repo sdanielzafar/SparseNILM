@@ -119,3 +119,4 @@ while True:
         estacc = acc.estacc()
         scp = sum([i != j for (i, j) in list(zip(hidden[i - 1], hidden[i]))])
         print('Obs %5d%s Δ %4d%s | SCP %2d | FS-fscore %.4f | Est.Acc. %.4f | Time %7.3fms' % (y1, measure, y1 - y0, measure, scp, fscore, estacc, elapsed * 1000))
+

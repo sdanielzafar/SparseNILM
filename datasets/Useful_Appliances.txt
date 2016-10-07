@@ -1,0 +1,8 @@
+1	HPE	Heat Pump
+2	FRE	Forced Air Furnace
+3	CDE	Clothes Dryer
+4	UTE	Utility Room Plug
+5	GRE	Garage
+6	TVE	Entertainment
+
+these together make up 2/3 of energy usage in the AMPds_1min set
