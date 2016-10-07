@@ -18,16 +18,16 @@ from libSSHMM import SuperStateHMM
 import pandas
 
 print()
-print('-----------------------------------------------------------------------------------------')
-print('Test running NILM and report stats each time  -------------------------------------------')
-print('-----------------------------------------------------------------------------------------')
+print('------------------------------------------------------------------------------')
+print('Test running NILM and report stats each time  --------------------------------')
+print('------------------------------------------------------------------------------')
 print()
 print('Start Time = ', datetime.now(), '(local time)')
 print()
 
-if len(sys.argv) != 6:
+if len(sys.argv) != 5:
     print()
-    print('USAGE: %s [modeldb] [datafile] [precision] [measure] [algo name]' % (sys.argv[0]))
+    print('USAGE: %s [modeldb] [datafile] [precision] [measure]' % (sys.argv[0]))
     print()
     print('       [modeldb]       - file name of model (omit file ext).')
     print('       [datafile]       - file name of datafile to be disaggregated (omit file ext).')
@@ -39,7 +39,8 @@ if len(sys.argv) != 6:
 
 print()
 print('Parameters:', sys.argv[1:])
-(modeldb, datafile, precision, measure, algo_name) = sys.argv[1:]
+(modeldb, datafile, precision, measure) = sys.argv[1:]
+algo_name = "SparseViterbi"
 precision = float(precision)
 disagg_algo = getattr(__import__('algo_' + algo_name, fromlist=['disagg_algo']), 'disagg_algo')
 print('Using disaggregation algorithm disagg_algo() from %s.' % ('algo_' + algo_name + '.py'))
@@ -66,7 +67,6 @@ labels = sshmms[0].labels
 print('\tModel lables are: ', labels)
 
 folds = len(jdata)
-print(folds)
 if folds != 1:
     print('ERROR: please use only single fold models.')
     exit(1)
@@ -125,7 +125,11 @@ for i in range(1, len(obs)):
         print('\r\tProgress: [%-20s], Disagg rate: %12.6f sec/sample ' % (pbar[:20], disagg_rate), end='', flush=True)
         sys.stdout.flush()
 
+y_out['WHE'] <- obs[1:]
+print()
 print("Writing out .csv with disaggregated results: ", csv_dir % modeldb, ".csv")
 y_out.to_csv(csv_dir % modeldb)
+print()
+print("Success! Disaggregation Completed")
 
     
