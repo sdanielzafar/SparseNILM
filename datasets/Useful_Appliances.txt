@@ -6,3 +6,25 @@
 6	TVE	Entertainment
 
 these together make up 2/3 of energy usage in the AMPds_1min set
+
+Here is the full:
+
+1	HPE	22.67%	
+2	FRE	17.39%
+3	CDE	11.18%
+4	UTE	6.89%
+5	GRE	6.50%
+6	TVE	5.63%	70.25%
+7	FGE	5.33%
+8	EQE	5.13%
+9	BME	4.83%
+10	OFE	4.34%	89.88%
+11	B2E	2.79%
+12	EBE	2.50%
+13	WOE	1.97%
+14	DWE	1.58%
+15	CWE	0.71%
+16	HTE	0.36%	
+17	DNE	1.58%
+18	B1E	0.10%
+19	OUE	0.00%
