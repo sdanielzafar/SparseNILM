@@ -19,7 +19,7 @@ import pandas
 
 print()
 print('------------------------------------------------------------------------------')
-print('Test running NILM and report stats each time  --------------------------------')
+print('Disaggregating House Meter given an existing model----------------------------')
 print('------------------------------------------------------------------------------')
 print()
 print('Start Time = ', datetime.now(), '(local time)')
@@ -85,6 +85,7 @@ df = pandas.read_csv(datafile_dir % datafile)
 
 print('\tSetting timestamp column %s as index.' % timestamp_col)
 df = df.set_index(timestamp_col)
+#df = df.set_index(timestamp_col).iloc[:100]
 
 print('\tModfity data with precision %d then convert to int...' % precision)
 for col in list(df):
@@ -92,7 +93,7 @@ for col in list(df):
     df[col] = df[col].astype(int)
         
 obs = list(df[agg_meter_col])
-      
+
 # We create and empty output matrix      
 y_out = pandas.DataFrame(columns = labels)
 
@@ -102,7 +103,7 @@ indv_tm_sum = 0.0
 indv_count = 0
 pbar = ''
 pbar_incro = len(obs) // 20
-for i in range(1, len(obs))):
+for i in range(1, len(obs)):
     
     y0 = obs[i - 1]
     y1 = obs[i]
@@ -125,9 +126,11 @@ for i in range(1, len(obs))):
         print('\r\tProgress: [%-20s], Disagg rate: %12.6f sec/sample ' % (pbar[:20], disagg_rate), end='', flush=True)
         sys.stdout.flush()
 
-y_out['WHE'] = obs[1:len(obs))]
-print()
-print("Writing out .csv with disaggregated results: ", csv_dir % modeldb, ".csv")
+y_out=y_out.set_index(df.index[1:]).reset_index()
+y_out['WHE'] = obs[1:len(obs)]
+y_out['Time'] = pandas.to_datetime(y_out['TimeStamp'], unit = 's')
+
+print("Writing out .csv with disaggregated results: \n", csv_dir % modeldb)
 y_out.to_csv(csv_dir % modeldb)
 print()
 print("Success! Disaggregation Completed")
