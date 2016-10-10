@@ -10,12 +10,9 @@ require(dplyr)
 require(tidyr)
 require(ggplot2)
 
-cat(paste(getwd(),"\n"))
-
 # name of the csv from disagg_NAV
-#file_name = "AMPds_heatpump_furnace_dryer_noise_3st" # this was replaced by the trailing args
 file_name = args[1]
-frac = 1/200
+frac = 1/200 # only visualizing a portion of the data
 
 # name of the whole-house comparison data
 cat(paste0("Reading in ",file_name,".csv...\n"))
