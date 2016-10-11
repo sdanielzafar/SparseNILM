@@ -4,7 +4,7 @@
 # Copyright (C) 2013-2015 Stephen Makonin. All Right Reserved.
 #
 
-import sys, json
+import sys, json, os
 from statistics import mean
 from time import time
 from datetime import datetime
@@ -160,6 +160,13 @@ else:
     print('\tOptimization (Time): NOT BEING TRACKED!')
 print('\tUnexpected events =', unexpected_event, ', Multiple switch events =', multi_switches_count, ', Adapted events =', adapted_event, '(errors =', adapted_errors, ')')
 
+print()
+print()
+print('Printing report to:')
+path = os.getcwd() + '\\reports\\' + modeldb + '.txt'
+print('\n\t'+path)
+
+acc.write(test_id, labels, measure, path)
 acc.print(test_id, labels, measure)
 
 report = []
@@ -197,7 +204,7 @@ print()
 print(acc_hdr)
 print(acc_det)
 print()
-print('-------------------------------------------------------------------------------')
+print('-------------------------------- ------------- --------------------------------')
 
 print()
 print('End Time = ', datetime.now(), '(local time)')
