@@ -4,7 +4,7 @@ cat("\n-------------------------------------------------------------------------
 cat("\n-----------------------------------------------------------------------------")
 cat("\nDisaggregated Appliance Comparison Plot (R) ---------------------------------")
 cat("\n-----------------------------------------------------------------------------")
-cat("\n------------------------------------------------------------S Daniel Zafar---")
+cat("\n------------------------------------------------------------S Daniel Zafar---\n")
 
 if (length(args) != 2) {
   stop("You need to add: 1) out csv file name and 2) truth data as args after the program", call.=FALSE)
@@ -14,7 +14,7 @@ suppressMessages(require(dplyr))
 suppressMessages(require(tidyr))
 suppressMessages(require(ggplot2))
 
-# args <- c("AMPds_heatpump_furnace_dryer_noise_3st","AMPdsR1_1min_A")
+args <- c("AMPds_heatpump_furnace_dryer_noise_3st","AMPdsR1_1min_A")
 # name of the csv from disagg_NAV
 disagg_name = args[1]
 truth_name = args[2]
@@ -26,19 +26,20 @@ est <- read.csv(file.path("csvs",paste0(disagg_name,".csv")))
 cat(paste0("\nReading in truth data: \n\t",truth_name,".csv...\n"))
 obs <- read.csv(file.path("datasets",paste0(truth_name,".csv"))) 
 
-labels = ls(est)[ls(est) != "X"]
+labels = ls(est)[ls(est) != "X" & !grepl("Time",ls(est))]
 
 cat("\nPreparing data...\n")
 est_plot <- est %>%
   select_(.dots = labels) %>%
-  mutate(TimeStamp = 1:nrow(est)) %>%
-  gather_("Meter","Est",c(labels)) 
+  mutate(TimeStamp = 1:length(WHE)) %>%
+  gather_("Meter","Est",labels) %>%
+  mutate(Est = as.numeric(Est))
 
 obs_plot <- obs %>%
   mutate(TimeStamp = 1:nrow(obs)) %>%
   select_(.dots = labels) %>% 
   mutate(TimeStamp = 1:nrow(obs)) %>%
-  gather_("Meter","Obs",c(labels))
+  gather_("Meter","Obs",labels)
 
 if (length(labels) < 4) cols = 1
 if (length(labels) > 3 & length(labels) < 6) cols = 2

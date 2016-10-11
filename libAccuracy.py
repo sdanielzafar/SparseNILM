@@ -187,12 +187,12 @@ class Accuracy:
         print()
         print('\tNDE          = %6.2f%%' % (self.nde() * 100.))
         print('\tRMSE         = %6.2f' % (self.rmse()))
-        print('\tEsitmation   = %6.2f%% (%s %s difference)' % (self.estacc() * 100., format(self.diff(), ',.1f'), measure))
+        print('\tEstimation   = %6.2f%% (%s %s difference)' % (self.estacc() * 100., format(self.diff(), ',.1f'), measure))
         print()
 
         print('\t|----------|----------|---------|-----------|----------|-------------------------------|------------|-------------------|')
         print('\t|          |          |         |           |          | FINITE-STATE MODIFICATIONS:   |            | PRECENT OF TOTAL: |')
-        print('\t| item ID  | ACCURACY |     NDE |   F-SCORE | M-FSCORE | PRECISION |  RECALL | F-SCORE | ESITMATION |     EST |   TRUTH |')
+        print('\t| item ID  | ACCURACY |     NDE |   F-SCORE | M-FSCORE | PRECISION |  RECALL | F-SCORE | ESTIMATION |     EST |   TRUTH |')
         print('\t|----------|----------|---------|-----------|----------|-----------|---------|---------|------------|---------|---------|')
         for i in range(self.items):
             print('\t| %-8s |  %6.2f%% | %6.2f%% |   %6.2f%% |  %6.2f%% |   %6.2f%% | %6.2f%% | %6.2f%% |    %6.2f%% | %6.2f%% | %6.2f%% |' % (labels[i], self.accuracy(i) * 100., self.nde(i) * 100., self.fscore(i) * 100, self.m_fscore(i) * 100., self.fs_precision(i) * 100., self.fs_recall(i) * 100., self.fs_fscore(i) * 100., self.estacc(i) * 100., self.est_percent(i) * 100., self.truth_percent(i) * 100.))
@@ -225,12 +225,12 @@ class Accuracy:
             f.write("\n")
             f.write('\n\tNDE          = %6.2f%%' % (self.nde() * 100.))
             f.write('\n\tRMSE         = %6.2f' % (self.rmse()))
-            f.write('\n\tEsitmation   = %6.2f%% (%s %s difference)' % (self.estacc() * 100., format(self.diff(), ',.1f'), measure))
+            f.write('\n\tEstimation   = %6.2f%% (%s %s difference)' % (self.estacc() * 100., format(self.diff(), ',.1f'), measure))
             f.write("\n")
     
             f.write('\n\t|----------|----------|---------|-----------|----------|-------------------------------|------------|-------------------|')
             f.write('\n\t|          |          |         |           |          | FINITE-STATE MODIFICATIONS:   |            | PRECENT OF TOTAL: |')
-            f.write('\n\t| item ID  | ACCURACY |     NDE |   F-SCORE | M-FSCORE | PRECISION |  RECALL | F-SCORE | ESITMATION |     EST |   TRUTH |')
+            f.write('\n\t| item ID  | ACCURACY |     NDE |   F-SCORE | M-FSCORE | PRECISION |  RECALL | F-SCORE | ESTIMATION |     EST |   TRUTH |')
             f.write('\n\t|----------|----------|---------|-----------|----------|-----------|---------|---------|------------|---------|---------|')
             for i in range(self.items):
                 f.write('\n\t| %-8s |  %6.2f%% | %6.2f%% |   %6.2f%% |  %6.2f%% |   %6.2f%% | %6.2f%% | %6.2f%% |    %6.2f%% | %6.2f%% | %6.2f%% |' % (labels[i], self.accuracy(i) * 100., self.nde(i) * 100., self.fscore(i) * 100, self.m_fscore(i) * 100., self.fs_precision(i) * 100., self.fs_recall(i) * 100., self.fs_fscore(i) * 100., self.estacc(i) * 100., self.est_percent(i) * 100., self.truth_percent(i) * 100.))

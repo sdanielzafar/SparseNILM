@@ -4,7 +4,7 @@ cat("\n-------------------------------------------------------------------------
 cat("\n-----------------------------------------------------------------------------")
 cat("\nDisaggregated Load Plot (R) -------------------------------------------------")
 cat("\n-----------------------------------------------------------------------------")
-cat("\n------------------------------------------------------------S Daniel Zafar---")
+cat("\n------------------------------------------------------------S Daniel Zafar---\n")
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -40,7 +40,7 @@ plot <- data %>%
   geom_line()
 
 cat(paste0("\n\nSaving plot to: \n",file.path("Visualization",paste0(file_name,".png...\n"))))
-png(file.path("\nVisualization",paste0(file_name,".png")),
+png(file.path("Visualization",paste0(file_name,".png")),
     height = 3, width = 8, units = "in", res = 300)
 plot
 dev.off()
