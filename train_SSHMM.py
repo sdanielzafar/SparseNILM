@@ -12,8 +12,10 @@ from libDataLoaders import dataset_loader
 from libFolding import Folding
 from libPMF import EmpiricalPMF
 from libSSHMM import SuperStateHMM, frange
+import pandas as pd
+import numpy as np
 
-ε = 0.00021 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
+epsilon = 0.00021 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
 
 print()
 print('----------------------------------------------------------------------------------------------------------------')
@@ -51,24 +53,30 @@ datasets_dir = './datasets/%s.csv'
 logs_dir = './logs/%s.log'
 models_dir = './models/%s.json'
 
-print()
+#print()
 sshmms = []
 train_times = []
+
 folds = Folding(dataset_loader(datasets_dir % dataset, ids, precision, denoised), folds)
 for (fold, priors, testing) in folds: 
     del testing
-    tm_start = time()
+    tm_start = time() 
     
     print()
     print('Creating load PMFs and finding load states...')
     print('\tMax partitions per load =', max_states)
     pmfs = []
-    for id in ids:
-        pmfs.append(EmpiricalPMF(id, max_obs * precision, list(priors[id])))
-        pmfs[-1].quantize(max_states, ε)
+    for id in ids: 
+        if priors[id].isnull().any().any():
+            print("\t\t\tConverting NA values in '" + id + "' to 0...")
+            priors[id].fillna(0)
+            print(priors[id].head(15))
+        pmfs.append(EmpiricalPMF(id, max_obs * precision, list(priors[id]),verbose=False))
+        pmfs[-1].quantize(max_states, epsilon)
 
     print()
-    print('Creating compressed SSHMM...')
+    print('Creating compr'
+          'essed SSHMM...')
     incro = 1 / precision
     sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs + incro, incro)])
     
