@@ -20,7 +20,7 @@ import pandas
 print()
 print('------------------------------------------------------------------------------')
 print('Disaggregating House Meter given an existing model----------------------------')
-print('------------------------------------------------------------------------------')
+print('-------------------------------------------------------------S Daniel Zafar---')
 print()
 print('Start Time = ', datetime.now(), '(local time)')
 print()
@@ -33,7 +33,6 @@ if len(sys.argv) != 5:
     print('       [datafile]       - file name of datafile to be disaggregated (omit file ext).')
     print('       [precision]     - number; e.g. 10 would convert A to dA.')
     print('       [measure]       - the measurement, e.g. A for current')    
-    print('       [algo name]     - specifiy the disaggregation algorithm to use.')
     print()
     exit(1)
 

@@ -14,7 +14,7 @@ suppressMessages(require(dplyr))
 suppressMessages(require(tidyr))
 suppressMessages(require(ggplot2))
 
-args <- c("AMPds_heatpump_furnace_dryer_noise_3st","AMPdsR1_1min_A")
+#args <- c("AMPds_heatpump_furnace_dryer_noise_3st","AMPdsR1_1min_A")
 # name of the csv from disagg_NAV
 disagg_name = args[1]
 truth_name = args[2]
@@ -26,12 +26,14 @@ est <- read.csv(file.path("csvs",paste0(disagg_name,".csv")))
 cat(paste0("\nReading in truth data: \n\t",truth_name,".csv...\n"))
 obs <- read.csv(file.path("datasets",paste0(truth_name,".csv"))) 
 
-labels = ls(est)[ls(est) != "X" & !grepl("Time",ls(est))]
+labels = ls(est)[ls(est) != "X" & 
+                   !grepl("Time",ls(est)) &
+                   ls(est) != "WHE"]
 
 cat("\nPreparing data...\n")
 est_plot <- est %>%
   select_(.dots = labels) %>%
-  mutate(TimeStamp = 1:length(WHE)) %>%
+  mutate(TimeStamp = 1:nrow(est)) %>%
   gather_("Meter","Est",labels) %>%
   mutate(Est = as.numeric(Est))
 
@@ -59,7 +61,7 @@ plot <- est_plot %>%
 plotHeight <- function(x){
   if (x == 6) return(3)
   if (x == 4) return(5)
-  if (x < 4) return(x*5)
+  if (x < 4) return(5*(x/3))
   if (x > 4) return(7)
 }
 cat(paste0("\n\nSaving plot to: \n\t",file.path("Visualization",paste0(disagg_name,"_apps.png...\n"))))
