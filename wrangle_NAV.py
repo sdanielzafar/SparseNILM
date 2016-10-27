@@ -11,6 +11,8 @@ import sys, os
 from datetime import datetime
 import pandas as pd
 import numpy as np
+from math import floor, log10
+import functools
 
 print()
 print('------------------------------------------------------------------------------')
@@ -44,12 +46,19 @@ if data == "eGauge":
     eGauge_long = pd.read_csv(path + "\eGauge Training Data.csv", header=0)
     # has columns site_id, dt, end_use, register, and kw
 
-    print("Wrangling data...")    
-    eGauge_long['kw'] = eGauge_long['kw'].round(5)
+    def round_sigfigs(num):
+        if np.isnan(num):
+            return(0)
+        return round(num, -int(floor(log10(abs(num)))))
+    
+    print("Processing data...")    
+    print("\tKeeping first sig fig...")
+    eGauge_long['kw'] = eGauge_long['kw'].apply(lambda x: 0 if x ==0 else round_sigfigs(x))
+    print("\tRenaming Appliances...")
     map_path = os.path.join(path, "App_Map.csv") 
     app_map = pd.read_csv(map_path, header = 0)
     eGauge_mapped = eGauge_long.merge(app_map, on='end_use')
-       
+    print("\tWrangling data...")
     eGauge = eGauge_mapped.pivot_table(index = ['dt','site_id'], 
                                      values = 'kw', 
                                      columns = 'eu')
@@ -70,7 +79,6 @@ if data == "eGauge":
         eGauge = eGauge[eGauge['house'].isin(houses_ID)]
     else:
         print("\tKeeping all houses...")
-      
     
     print("\nSaving data in to:\n" + out + "...")
     filename = os.path.join(out, name + ".csv")        

@@ -85,6 +85,10 @@ for (fold, priors, testing) in folds:
     obs = list(priors[obs_id])
     hidden = [i for i in priors[ids].to_records(index=False)]
     
+    print("obs is: ")
+    print(obs[0:10])
+    print("hidden is:")
+    print(hidden[0:10])
     sshmm.build(obs, hidden)
     sshmms.append(sshmm)
     

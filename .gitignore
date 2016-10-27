@@ -1,8 +1,0 @@
-.DS_Store
-.pyc
-__pycache__
-datasets/AMPdsR2_1min_A.csv
-datasets/REDD*.csv
-models/*.json
-
-.Rproj.user
