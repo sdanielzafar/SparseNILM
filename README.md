@@ -20,8 +20,8 @@ If you usethe code in your research please cite this paper. Current citation det
 
 ## Updates by S Daniel Zafar (10/11/16):
 Additional scripts for 
-- **disagg.NAV** Disaggregating new whole-house data and ouputing disaggregated results 
-- **disagg_viz.R & app_viz.R** Visualization (in R) of all disaggregated data as well as obs and est for each appliance (disagg_viz.R & app_viz.R)
-- **~.bat** batch files for Windows machines 
+- **disagg.NAV:** Disaggregating new whole-house data and ouputing disaggregated results 
+- **disagg_viz.R & app_viz.R:** Visualization (in R) of all disaggregated data as well as obs and est for each appliance (disagg_viz.R & app_viz.R)
+- **~.bat:** batch files for Windows machines 
 
 Added a function to class Accuracy which outputs the Verification metrics to a specified .txt file in "\reports\" folder ( accuracy.write() )
