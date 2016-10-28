@@ -31,6 +31,12 @@ if len(sys.argv) != 4:
     print('       [houses_ID]       - House names (sep by commas) to be stacked, or All')  
     print()
     exit(1)
+    
+#==============================================================================
+# data = 'eGauge'
+# name = 'testerrr'
+# houses_ID = 'F117'
+#==============================================================================
 
 print()
 print('Parameters:', sys.argv[1:])
@@ -41,8 +47,7 @@ if data == "eGauge":
     path = "Y:\\MA Utilities\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\data\\Blue_Egauge"
     out = "Y:\\MA Utilities\\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\SparseNILM\\datasets"
     
-    
-    print("Reading data in long format...")
+    print("\nReading eGauge data in long format...")
     eGauge_long = pd.read_csv(path + "\eGauge Training Data.csv", header=0)
     # has columns site_id, dt, end_use, register, and kw
     
@@ -55,16 +60,16 @@ if data == "eGauge":
     joined = eGauge_long.merge(forjoin, 
                                how = "left",  
                                on=['site_id','dt','end_use'], left_index = True, copy = False)
-    eGauge_long = joined.assign(kw = np.where(np.isnan(joined[BlueType]),joined['kw'],joined[BlueType]))
+    #eGauge_long = joined.assign(kw = np.where(np.isnan(joined[BlueType]),joined['kw'],joined[BlueType]))
+    eGauge_long = joined.assign(kw = np.where(joined['end_use'] == 'Whole House', joined[BlueType], joined['kw']))
     del eGauge_long[BlueType]
-
 
     def round_sigfigs(num):
         if np.isnan(num):
             return(0)
         return round(num, -int(floor(log10(abs(num)))))
     
-    print("Processing data...")    
+    print("\nProcessing data...")    
     #print("\tKeeping first sig fig...")
     #eGauge_long['kw'] = eGauge_long['kw'].apply(lambda x: 0 if x ==0 else round_sigfigs(x))
     print("\tRenaming Appliances...")
@@ -83,7 +88,7 @@ if data == "eGauge":
     eGauge.fillna(0, inplace = True)
     
     if houses_ID != ['All']:
-        for i in houses_ID:
+        for i in [houses_ID]:
             if i not in eGauge['house'].unique():
                 print("\tHouse ID " + i + " is not in the data!")
                 exit(1)               

@@ -240,6 +240,7 @@ def eGauge(filename, ids, precision, denoised=False, verbose=True):
     timestamp_col = 'TimeStamp'
     agg_meter_col = 'MAIN'
     unmetered_col = 'DIFF'
+    house_col = 'house'
         
     if verbose: print('Loading eGauge dataset at %s...' % filename)
     df = pandas.read_csv(filename)
@@ -261,7 +262,7 @@ def eGauge(filename, ids, precision, denoised=False, verbose=True):
         if verbose: print('\tNoise will modelled as %s.' % unmetered_col)
         
     if verbose: print('\tKeeping only columns %s.' % str(cols))    
-    df = df[[agg_meter_col] + cols]
+    df = df[[agg_meter_col] + [house_col] + cols]
     
     if denoised:
         if verbose: print('\tDenoising aggregate meter column %s.' % agg_meter_col)
