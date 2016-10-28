@@ -186,7 +186,10 @@ class Accuracy:
         print('\tFS F-Score   = %6.2f%%' % (self.fs_fscore() * 100.))
         print()
         print('\tNDE          = %6.2f%%' % (self.nde() * 100.))
-        print('\tRMSE         = %6.2f' % (self.rmse()))
+        try:
+            print('\n\tRMSE         = %6.2f' % (self.rmse()))
+        except:
+            print('\n\tRMSE         = ERROR')
         print('\tEstimation   = %6.2f%% (%s %s difference)' % (self.estacc() * 100., format(self.diff(), ',.1f'), measure))
         print()
 
@@ -224,7 +227,10 @@ class Accuracy:
             f.write('\n\tFS F-Score   = %6.2f%%' % (self.fs_fscore() * 100.))
             f.write("\n")
             f.write('\n\tNDE          = %6.2f%%' % (self.nde() * 100.))
-            f.write('\n\tRMSE         = %6.2f' % (self.rmse()))
+            try:
+                f.write('\n\tRMSE         = %6.2f' % (self.rmse()))
+            except:
+                f.write('\n\tRMSE         = ERROR')
             f.write('\n\tEstimation   = %6.2f%% (%s %s difference)' % (self.estacc() * 100., format(self.diff(), ',.1f'), measure))
             f.write("\n")
     

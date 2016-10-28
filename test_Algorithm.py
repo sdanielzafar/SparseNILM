@@ -107,7 +107,14 @@ for (fold, priors, testing) in folds:
         y1 = obs[i]
         
         start = time() 
-        (p, k, Pt, cdone, ctotal) = disagg_algo(sshmm, [y0, y1])
+        
+        try:
+            (p, k, Pt, cdone, ctotal) = disagg_algo(sshmm, [y0, y1])
+        except:
+            print("y1 is:")
+            print(y1)
+            #(p, k, Pt, cdone, ctotal) = disagg_algo(sshmm, [obs[i - 2], obs[i - 1]])
+            
         elapsed = (time() - start)
 
         s_est = sshmm.detangle_k(k)
@@ -195,17 +202,19 @@ report.append(['Mult-Switches', multi_switches_count])
 report.append(['Noise', round(y_noise / y_total, 4)])
 
 print()
-print('-------------------------------- CSV REPORTING --------------------------------')
-print()
-print(','.join([c[0] for c in report]))
-print(','.join([str(c[1]) for c in report]))
-print()
-(acc_hdr, acc_det) = acc.csv(test_id, labels, measure)
-print(acc_hdr)
-print(acc_det)
-print()
-print('-------------------------------- ------------- --------------------------------')
-
+#==============================================================================
+# print('-------------------------------- CSV REPORTING --------------------------------')
+# print()
+# print(','.join([c[0] for c in report]))
+# print(','.join([str(c[1]) for c in report]))
+# print()
+# (acc_hdr, acc_det) = acc.csv(test_id, labels, measure)
+# print(acc_hdr)
+# print(acc_det)
+# print()
+# print('-------------------------------- ------------- --------------------------------')
+# 
+#==============================================================================
 print()
 print('End Time = ', datetime.now(), '(local time)')
 print()

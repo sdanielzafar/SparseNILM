@@ -45,6 +45,19 @@ if data == "eGauge":
     print("Reading data in long format...")
     eGauge_long = pd.read_csv(path + "\eGauge Training Data.csv", header=0)
     # has columns site_id, dt, end_use, register, and kw
+    
+    print("Reading in Blueline Data...")
+    Blueline = pd.read_csv(path + "\Alternate Blue Line Training Data.csv", header=0)
+    BlueType = "kw_most"
+    forjoin = Blueline[['site_id','dt',BlueType,'end_use']]
+    
+    print("\tJoining it to eGauge data...")
+    joined = eGauge_long.merge(forjoin, 
+                               how = "left",  
+                               on=['site_id','dt','end_use'], left_index = True, copy = False)
+    eGauge_long = joined.assign(kw = np.where(np.isnan(joined[BlueType]),joined['kw'],joined[BlueType]))
+    del eGauge_long[BlueType]
+
 
     def round_sigfigs(num):
         if np.isnan(num):
@@ -52,8 +65,8 @@ if data == "eGauge":
         return round(num, -int(floor(log10(abs(num)))))
     
     print("Processing data...")    
-    print("\tKeeping first sig fig...")
-    eGauge_long['kw'] = eGauge_long['kw'].apply(lambda x: 0 if x ==0 else round_sigfigs(x))
+    #print("\tKeeping first sig fig...")
+    #eGauge_long['kw'] = eGauge_long['kw'].apply(lambda x: 0 if x ==0 else round_sigfigs(x))
     print("\tRenaming Appliances...")
     map_path = os.path.join(path, "App_Map.csv") 
     app_map = pd.read_csv(map_path, header = 0)

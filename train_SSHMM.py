@@ -15,7 +15,6 @@ from libSSHMM import SuperStateHMM, frange
 import pandas as pd
 import numpy as np
 
-epsilon = 0.00021 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
 
 print()
 print('----------------------------------------------------------------------------------------------------------------')
@@ -57,7 +56,11 @@ models_dir = './models/%s.json'
 sshmms = []
 train_times = []
 
-folds = Folding(dataset_loader(datasets_dir % dataset, ids, precision, denoised), folds)
+data = dataset_loader(datasets_dir % dataset, ids, precision, denoised)
+
+
+epsilon = 0.0009 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
+folds = Folding(data, folds)
 for (fold, priors, testing) in folds: 
     del testing
     tm_start = time() 
