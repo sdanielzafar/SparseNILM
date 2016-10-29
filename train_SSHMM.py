@@ -60,27 +60,31 @@ data = dataset_loader(datasets_dir % dataset, ids, precision, denoised)
 
 
 epsilon = 0.0009 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
+# max_obs = data['MAIN'].max() 
 folds = Folding(data, folds)
 for (fold, priors, testing) in folds: 
     del testing
     tm_start = time() 
     
     print()
+    print("\tMaximum Obs fed is: ", max_obs*precision)
+    print('\tInitial epsilon is %12.6f' % epsilon)
     print('Creating load PMFs and finding load states...')
     print('\tMax partitions per load =', max_states)
     pmfs = []
     for id in ids: 
-        if priors[id].isnull().any().any():
-            print("\t\t\tConverting NA values in '" + id + "' to 0...")
-            priors[id].fillna(0)
-            print(priors[id].head(15))
-        pmfs.append(EmpiricalPMF(id, max_obs * precision, list(priors[id]),verbose=False))
+        print(priors[id].describe())
+        pmfs.append(EmpiricalPMF(id, max_obs*precision, list(priors[id]),verbose=False))
         pmfs[-1].quantize(max_states, epsilon)
 
     print()
     print('Creating compr'
           'essed SSHMM...')
     incro = 1 / precision
+    print('\tIncro: '+str(incro))
+    
+    print('\tOther Arg: ')
+    print(pd.DataFrame([i for i in frange(0, max_obs + incro, incro)]).describe())
     sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs + incro, incro)])
     
     print('\tConverting DataFrame in to obs/hidden lists...')

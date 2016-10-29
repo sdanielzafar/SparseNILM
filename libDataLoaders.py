@@ -3,7 +3,8 @@
 # Copyright (C) 2013-2015 Stephen Makonin. All Right Reserved.
 #
 
-import pandas
+import pandas 
+import numpy as np
 
 def AMPds_r2013(filename, ids, precision, denoised=False, verbose=True):
     """Loaders for the AMPds Release 2013 dataset."""
@@ -260,9 +261,15 @@ def eGauge(filename, ids, precision, denoised=False, verbose=True):
     if unmetered_col in cols:
         cols.remove(unmetered_col)
         if verbose: print('\tNoise will modelled as %s.' % unmetered_col)
+    
+    if verbose: print('\tCombining "%s" and "WHE" columns' % agg_meter_col)  
+    df = df.assign(MAIN = np.where(df[agg_meter_col] == 0, df['WHE'], df[agg_meter_col]))
         
     if verbose: print('\tKeeping only columns %s.' % str(cols))    
     df = df[[agg_meter_col] + [house_col] + cols]
+
+    if verbose: print('\tKeeping rows wih "%s" and "%s" values' % (agg_meter_col,house_col))    
+    df = df.query('MAIN != 0 & house != 0')    
     
     if denoised:
         if verbose: print('\tDenoising aggregate meter column %s.' % agg_meter_col)

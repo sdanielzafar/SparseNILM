@@ -87,10 +87,13 @@ if data == "eGauge":
     eGauge.reset_index(drop=True, inplace = True)
     eGauge.fillna(0, inplace = True)
     
+    if len(houses_ID) < 2:
+        houses_ID = [houses_ID]
+    
     if houses_ID != ['All']:
-        for i in [houses_ID]:
+        for i in houses_ID:
             if i not in eGauge['house'].unique():
-                print("\tHouse ID " + i + " is not in the data!")
+                print("\tHouse ID '" + i + "' is not in the data!")
                 exit(1)               
         print("\tKeeping houses:")
         print(houses_ID) 

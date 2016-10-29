@@ -45,14 +45,16 @@ print('Parameters:', sys.argv[1:])
 (modeldb, dataset, precision, max_obs, denoised, max_states, folds, ids) = sys.argv[1:]
 
 #==============================================================================
-# modeldb = 'eGauge_AC_CDE_FGE_117'
-# dataset = 'eGauge_AC_CDE_FGE_117' 
+# modeldb = 'eGauge_AC_CDE_FGE_118'
+# dataset = 'eGauge_AC_CDE_FGE_118' 
 # precision = '1000000' 
 # max_obs = '6.721' 
 # denoised = 'noised' 
 # max_states = '4' 
-# folds = '10' 
+# folds = '3' 
 # ids = 'AC,CDE,FGE'  
+# import os
+# os.chdir('Y:\\MA Utilities\\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\SparseNILM')
 #==============================================================================
 
 precision = float(precision)
@@ -80,6 +82,7 @@ if 'MAIN' not in data.columns:
     
 houses = data['house'].drop_duplicates().tolist()
 if 0 in houses:
+    print("Removing '0' from houses...Check this...")
     houses.remove(0)
     
 for sel_house in houses:
@@ -90,6 +93,7 @@ for sel_house in houses:
     folds = Folding(house_data, folds)
     
     epsilon = round(110/len(house_data.index),5)   # I don't know where the 110 comes from, neither does Makonin
+    #epsilon = 0.0009
     max_obs = house_data['MAIN'].max()    
 
     for (fold, priors, testing) in folds: 
@@ -98,22 +102,24 @@ for sel_house in houses:
         
         print()
         print('\tInitial epsilon is %12.6f' % epsilon)
+        print("\tMaximum Obs fed is: ", max_obs)
         print('\tCreating load PMFs and finding load states...')
         print('\t\tMax partitions per load =', max_states)
         pmfs = []
         for id in ids: 
-            if priors[id].isnull().any().any():
-                print("\t\t\t\tConverting NA values in '" + id + "' to 0...")
-                priors[id].fillna(0)
-                print(priors[id].head(15))
+            print(priors[id].describe())
             pmfs.append(EmpiricalPMF(id, max_obs, list(priors[id]),verbose=False))
             pmfs[-1].quantize(max_states, epsilon)
+            
     
         print()
         print('\tCreating compr'
               'essed SSHMM...')
         incro = 1 / precision
-        sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs + incro, incro)])
+        print('\tIncro: '+str(incro))
+        print('\tOther Arg: ')
+        print(pd.DataFrame([i for i in frange(0, max_obs/precision + incro, incro)]).describe())
+        sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs/precision + incro, incro)])
         
         print('\t\tConverting DataFrame in to obs/hidden lists...')
         obs_id = list(priors)[0]
