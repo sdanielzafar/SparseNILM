@@ -22,13 +22,14 @@ print()
 print('Start Time = ', datetime.now(), '(local time)')
 print()
 
-if len(sys.argv) != 4:
+if len(sys.argv) != 5:
     print()
-    print('USAGE: %s [data] [name] [houses_ID]  % (sys.argv[0]))')
+    print('USAGE: %s [data] [name] [houses_ID] [MAIN only] % (sys.argv[0]))')
     print()
     print('       [data]            - Name of dataset eg. REDD, eGauge, Blueline...')
     print('       [name]            - The output file/table name') 
     print('       [houses_ID]       - House names (sep by commas) to be stacked, or All')  
+    print('       [MAIN only]       - If "True" then only Main column is produced')  
     print()
     exit(1)
     
@@ -40,34 +41,39 @@ if len(sys.argv) != 4:
 
 print()
 print('Parameters:', sys.argv[1:])
-(data, name, houses_ID) = sys.argv[1:]
+(data, name, houses_ID, Main_only) = sys.argv[1:]
+if Main_only == 'True':
+    Main_only = True
 houses_ID = houses_ID.split(',')
 
 if data == "eGauge":
     path = "Y:\\MA Utilities\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\data\\Blue_Egauge"
     out = "Y:\\MA Utilities\\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\SparseNILM\\datasets"
+    dissag_out = "Y:\\MA Utilities\\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\SparseNILM\\for_dissag"
     
     print("\nReading eGauge data in long format...")
     eGauge_long = pd.read_csv(path + "\eGauge Training Data.csv", header=0)
-    # has columns site_id, dt, end_use, register, and kw
+    # has columns site_id, dt, unit, register, and kw
     
     print("Reading in Blueline Data...")
     Blueline = pd.read_csv(path + "\Alternate Blue Line Training Data.csv", header=0)
     BlueType = "kw_most"
-    forjoin = Blueline[['site_id','dt',BlueType,'end_use']]
+    forjoin = Blueline[['site_id','dt',BlueType,'unit']]
     
     print("\tJoining it to eGauge data...")
     joined = eGauge_long.merge(forjoin, 
                                how = "left",  
-                               on=['site_id','dt','end_use'], left_index = True, copy = False)
+                               on=['site_id','dt','unit'], left_index = True, copy = False)
     #eGauge_long = joined.assign(kw = np.where(np.isnan(joined[BlueType]),joined['kw'],joined[BlueType]))
     eGauge_long = joined.assign(kw = np.where(joined['end_use'] == 'Whole House', joined[BlueType], joined['kw']))
     del eGauge_long[BlueType]
 
-    def round_sigfigs(num):
-        if np.isnan(num):
-            return(0)
-        return round(num, -int(floor(log10(abs(num)))))
+#==============================================================================
+#     def round_sigfigs(num):
+#         if np.isnan(num):
+#             return(0)
+#         return round(num, -int(floor(log10(abs(num)))))
+#==============================================================================
     
     print("\nProcessing data...")    
     #print("\tKeeping first sig fig...")
@@ -75,7 +81,7 @@ if data == "eGauge":
     print("\tRenaming Appliances...")
     map_path = os.path.join(path, "App_Map.csv") 
     app_map = pd.read_csv(map_path, header = 0)
-    eGauge_mapped = eGauge_long.merge(app_map, on='end_use')
+    eGauge_mapped = eGauge_long.merge(app_map, on='unit')
     print("\tWrangling data...")
     eGauge = eGauge_mapped.pivot_table(index = ['dt','site_id'], 
                                      values = 'kw', 
@@ -86,14 +92,18 @@ if data == "eGauge":
     eGauge.sort_values(by = ['house','TimeStamp'], inplace = True)
     eGauge.reset_index(drop=True, inplace = True)
     eGauge.fillna(0, inplace = True)
+    print("\tDeleting rows with no eGauge data...")
+    val_cols = eGauge.columns.difference(['TimeStamp','MAIN','house'])
+    eGauge = eGauge[(eGauge.ix[:, val_cols].T != 0).any()]
+    eGauge = eGauge.assign(MAIN = np.where(eGauge['MAIN'] == 0, eGauge['WHE'], eGauge['MAIN']))
     
-    if len(houses_ID) < 2:
-        houses_ID = [houses_ID]
+    #if len(houses_ID) > 2:
+    #    houses_ID = [houses_ID]
     
     if houses_ID != ['All']:
         for i in houses_ID:
             if i not in eGauge['house'].unique():
-                print("\tHouse ID '" + i + "' is not in the data!")
+                print("\tHouse ID '" + str(i) + "' is not in the data!")
                 exit(1)               
         print("\tKeeping houses:")
         print(houses_ID) 
@@ -101,8 +111,13 @@ if data == "eGauge":
     else:
         print("\tKeeping all houses...")
     
+    filename = os.path.join(out, name + ".csv") 
+    if Main_only == True:
+        print("\nOnly keeping 'MAIN' column...")
+        eGauge = eGauge[['TimeStamp','MAIN']]
+        filename = os.path.join(dissag_out, name + ".csv")  
+        
     print("\nSaving data in to:\n" + out + "...")
-    filename = os.path.join(out, name + ".csv")        
     eGauge.reset_index(drop = True).to_csv(filename)
     
     print("\n\nSUCCESS! Completed Data Wrangling")
@@ -172,7 +187,8 @@ if data == "REDD":
                 ord_cols.extend(flat.index.tolist())
                 out_df = out_df[ord_cols]
                 
-                filename = os.path.join(out, name + ".csv")        
+                filename = os.path.join(out, name + ".csv")      
+                
                 out_df.reset_index(drop = True).to_csv(filename)
         
     

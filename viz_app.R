@@ -15,7 +15,7 @@ suppressMessages(require(tidyr))
 suppressMessages(require(ggplot2))
 suppressMessages(require(lubridate))
 
-# args <- c("eGauge_AC_holdR574","eGauge_AC_holdR574")
+# args <- c("eGauge_AC_CDE_FGE_hold511","eGauge_AC_CDE_FGE_511")
 # setwd("Y:/MA Utilities/Residential/RES 1 -Residential Baseline Study/Analysis/NILM/SparseNILM")
 # name of the csv from disagg_NAV
 disagg_name = args[1]
@@ -107,7 +107,7 @@ plot = est %>%
 
 cat(paste0("\n\n\tSaving Loadshape plot to: \n\t",file.path("Visualization",paste0(disagg_name,"_loadshape.png...\n"))))
 png(file.path("Visualization",paste0(disagg_name,"_loadshape.png")),
-    height = plotHeight(4, width = 6, units = "in", res = 300))
+    height = 4, width = 6, units = "in", res = 300)
 plot
 dev.off()
 

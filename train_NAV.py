@@ -61,7 +61,7 @@ precision = float(precision)
 max_obs = float(max_obs)
 denoised = denoised == 'denoised'
 max_states = int(max_states)
-folds = int(folds)
+num_folds = int(folds)
 ids = ids.split(',')
 datasets_dir = './datasets/%s.csv'
 logs_dir = './logs/%s.log'
@@ -90,7 +90,7 @@ for sel_house in houses:
     print('***********************************************************************')
     print('**************************** HOUSE: '+sel_house+' ********************************')
     house_data = data.query('house == @sel_house')
-    folds = Folding(house_data, folds)
+    folds = Folding(house_data, num_folds)
     
     epsilon = round(110/len(house_data.index),5)   # I don't know where the 110 comes from, neither does Makonin
     #epsilon = 0.0009
@@ -107,7 +107,6 @@ for sel_house in houses:
         print('\t\tMax partitions per load =', max_states)
         pmfs = []
         for id in ids: 
-            print(priors[id].describe())
             pmfs.append(EmpiricalPMF(id, max_obs, list(priors[id]),verbose=False))
             pmfs[-1].quantize(max_states, epsilon)
             
@@ -116,9 +115,6 @@ for sel_house in houses:
         print('\tCreating compr'
               'essed SSHMM...')
         incro = 1 / precision
-        print('\tIncro: '+str(incro))
-        print('\tOther Arg: ')
-        print(pd.DataFrame([i for i in frange(0, max_obs/precision + incro, incro)]).describe())
         sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs/precision + incro, incro)])
         
         print('\t\tConverting DataFrame in to obs/hidden lists...')

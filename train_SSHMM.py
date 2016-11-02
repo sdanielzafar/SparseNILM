@@ -59,8 +59,9 @@ train_times = []
 data = dataset_loader(datasets_dir % dataset, ids, precision, denoised)
 
 
-epsilon = 0.0009 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
-# max_obs = data['MAIN'].max() 
+#epsilon = 0.0009 # 0.00021, magic number, I forget how I calculated this value (maybe 110 / 524544)
+epsilon = round(110/len(data.index),5)   # I don't know where the 110 comes from, neither does Makonin
+max_obs = data['MAIN'].max()/precision
 folds = Folding(data, folds)
 for (fold, priors, testing) in folds: 
     del testing
@@ -88,14 +89,10 @@ for (fold, priors, testing) in folds:
     sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs + incro, incro)])
     
     print('\tConverting DataFrame in to obs/hidden lists...')
-    obs_id = list(priors)[0]
-    obs = list(priors[obs_id])
+    obs_id = list(priors)[0] # this is 'MAIN'
+    obs = list(priors[obs_id]) # this is the values in 'MAIN' column
     hidden = [i for i in priors[ids].to_records(index=False)]
     
-    print("obs is: ")
-    print(obs[0:10])
-    print("hidden is:")
-    print(hidden[0:10])
     sshmm.build(obs, hidden)
     sshmms.append(sshmm)
     

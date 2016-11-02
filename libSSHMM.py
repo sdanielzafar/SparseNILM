@@ -181,7 +181,7 @@ class CompressedVector:
                 i = self.keys.index(key)
                 self.values[i] = value
             except:
-                self.keys.append(col)
+                self.keys.append(key)
                 self.values.append(value)
         elif self.indexing == 1:
             (i, v) = hash_lookup(self.hash_table, self.values, key)

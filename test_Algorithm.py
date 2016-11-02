@@ -111,8 +111,7 @@ for (fold, priors, testing) in folds:
         try:
             (p, k, Pt, cdone, ctotal) = disagg_algo(sshmm, [y0, y1])
         except:
-            print("y1 is:")
-            print(y1)
+            pass
             #(p, k, Pt, cdone, ctotal) = disagg_algo(sshmm, [obs[i - 2], obs[i - 1]])
             
         elapsed = (time() - start)

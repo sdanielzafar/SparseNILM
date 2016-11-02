@@ -262,8 +262,10 @@ def eGauge(filename, ids, precision, denoised=False, verbose=True):
         cols.remove(unmetered_col)
         if verbose: print('\tNoise will modelled as %s.' % unmetered_col)
     
-    if verbose: print('\tCombining "%s" and "WHE" columns' % agg_meter_col)  
-    df = df.assign(MAIN = np.where(df[agg_meter_col] == 0, df['WHE'], df[agg_meter_col]))
+#==============================================================================
+#     if verbose: print('\tCombining "%s" and "WHE" columns' % agg_meter_col)  
+#     df = df.assign(MAIN = np.where(df[agg_meter_col] == 0, df['WHE'], df[agg_meter_col]))
+#==============================================================================
         
     if verbose: print('\tKeeping only columns %s.' % str(cols))    
     df = df[[agg_meter_col] + [house_col] + cols]

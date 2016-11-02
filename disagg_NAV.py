@@ -15,7 +15,7 @@ import sys, json
 from time import time
 from datetime import datetime
 from libSSHMM import SuperStateHMM
-import pandas
+import pandas as pd
 
 print()
 print('------------------------------------------------------------------------------')
@@ -36,6 +36,13 @@ if len(sys.argv) != 5:
     print()
     exit(1)
 
+#==============================================================================
+# modeldb = 'eGauge_AC_CDE_FGE_hold511'
+# datafile = 'eGauge_AC_CDE_FGE_511_main'
+# precision = '10000'
+# measure = 'kw'
+#==============================================================================
+    
 print()
 print('Parameters:', sys.argv[1:])
 (modeldb, datafile, precision, measure) = sys.argv[1:]
@@ -69,7 +76,7 @@ folds = len(jdata)
 if folds != 1:
     print('ERROR: please use only single fold models.')
     exit(1)
-print('\tLoading JSON data into SSHMM object...')
+print('\n\tLoading JSON data into SSHMM object...')
 sshmm = SuperStateHMM()
 sshmm._fromdict(data)
 del jdata
@@ -77,10 +84,10 @@ labels = sshmm.labels
 print('\tModel lables are: ', labels)
 
 timestamp_col = 'TimeStamp'
-agg_meter_col = 'WHE'
+agg_meter_col = 'MAIN'
 
 print('Loading the %s data' % datafile)   # read in the aggregate data
-df = pandas.read_csv(datafile_dir % datafile) 
+df = pd.read_csv(datafile_dir % datafile) 
 
 print('\tSetting timestamp column %s as index.' % timestamp_col)
 df = df.set_index(timestamp_col)
@@ -94,9 +101,9 @@ for col in list(df):
 obs = list(df[agg_meter_col])
 
 # We create and empty output matrix      
-y_out = pandas.DataFrame(columns = labels)
+y_out = pd.DataFrame(columns = labels)
 
-print("Performing the disaggregation...")
+print("\nPerforming the disaggregation...")
 # The next four lines are for record-keeping
 indv_tm_sum = 0.0
 indv_count = 0
@@ -114,7 +121,7 @@ for i in range(1, len(obs)):
     s_est = sshmm.detangle_k(k)
     y_est = sshmm.y_estimate(s_est, breakdown=True)
 
-    y_out = y_out.append(pandas.DataFrame([y_est], columns=labels))
+    y_out = y_out.append(pd.DataFrame([y_est], columns=labels))
     
     indv_tm_sum += elapsed
     indv_count += 1
@@ -125,9 +132,14 @@ for i in range(1, len(obs)):
         print('\r\tProgress: [%-20s], Disagg rate: %12.6f sec/sample ' % (pbar[:20], disagg_rate), end='', flush=True)
         sys.stdout.flush()
 
+        
 y_out=y_out.set_index(df.index[1:]).reset_index()
-y_out['WHE'] = obs[1:len(obs)]
-y_out['Time'] = pandas.to_datetime(y_out['TimeStamp'], unit = 's')
+y_out['MAIN'] = obs[1:len(obs)]
+labels.insert(0,'MAIN')
+y_out[labels] = y_out[labels] / precision
+
+if type(y_out['TimeStamp'][y_out.index[1]]) != str:
+    y_out['Time'] = pd.to_datetime(y_out['TimeStamp'], unit = 's')
 
 print("Writing out .csv with disaggregated results: \n", csv_dir % modeldb)
 y_out.to_csv(csv_dir % modeldb)
