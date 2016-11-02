@@ -44,18 +44,16 @@ print()
 print('Parameters:', sys.argv[1:])
 (modeldb, dataset, precision, max_obs, denoised, max_states, folds, ids) = sys.argv[1:]
 
-#==============================================================================
-# modeldb = 'eGauge_AC_CDE_FGE_118'
-# dataset = 'eGauge_AC_CDE_FGE_118' 
-# precision = '1000000' 
-# max_obs = '6.721' 
-# denoised = 'noised' 
-# max_states = '4' 
-# folds = '3' 
-# ids = 'AC,CDE,FGE'  
-# import os
-# os.chdir('Y:\\MA Utilities\\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\SparseNILM')
-#==============================================================================
+modeldb = 'testerr'
+dataset = 'eGauge_FRG2_holdF117_c' 
+precision = '1000' 
+max_obs = '6.721' 
+denoised = 'noised' 
+max_states = '4' 
+folds = '3' 
+ids = 'FRG'  
+import os
+os.chdir('Y:\\MA Utilities\\Residential\\RES 1 -Residential Baseline Study\\Analysis\\NILM\\SparseNILM')
 
 precision = float(precision)
 max_obs = float(max_obs)
@@ -79,53 +77,83 @@ if 'house' not in data.columns:
 if 'MAIN' not in data.columns:
     print("This script requires a dataframe with column 'MAIN'")
     exit(1)
+if len(ids) > 1:
+    print("This script is only set up for one appliance at the moment!")
+    exit(1)
     
 houses = data['house'].drop_duplicates().tolist()
 if 0 in houses:
     print("Removing '0' from houses...Check this...")
     houses.remove(0)
+
+max_obs = data['MAIN'].max()    
     
+scale_guide = {}
 for sel_house in houses:
     print()
-    print('***********************************************************************')
-    print('**************************** HOUSE: '+sel_house+' ********************************')
-    house_data = data.query('house == @sel_house')
-    folds = Folding(house_data, num_folds)
-    
-    epsilon = round(110/len(house_data.index),5)   # I don't know where the 110 comes from, neither does Makonin
-    #epsilon = 0.0009
-    max_obs = house_data['MAIN'].max()    
+    print('Quantizing states from %s...' % sel_house)
 
-    for (fold, priors, testing) in folds: 
-        del testing
-        tm_start = time() 
+    house_data = data.query('house == @sel_house')
+    house_pmfs = []
+    for id in ids: 
+        epsilon = round(55/len(house_data[id]),5)
+        house_pmfs.append(EmpiricalPMF(id, max_obs, list(house_data[id]),verbose=False))
+        house_pmfs[-1].quantize(max_states, epsilon)
+        peaks = [pmf.bin_peaks for pmf in house_pmfs]
+        scale = np.asarray(peaks).max()
+        print("Scaling by:")
+        print(scale)
+        scale_guide[sel_house] = scale
         
-        print()
-        print('\tInitial epsilon is %12.6f' % epsilon)
-        print("\tMaximum Obs fed is: ", max_obs)
-        print('\tCreating load PMFs and finding load states...')
-        print('\t\tMax partitions per load =', max_states)
-        pmfs = []
-        for id in ids: 
-            pmfs.append(EmpiricalPMF(id, max_obs, list(priors[id]),verbose=False))
-            pmfs[-1].quantize(max_states, epsilon)
-            
+data["scaler"] = data['house'].map(scale_guide)
+data = data.assign(temp = data[id]/data['scaler'])
+data[id] = data['temp']
+del data['temp'], data['scaler']
+data[id].fillna(0,inplace=True)
+data[id] = data[id].astype('int64')
+
+print("Saving the scaling factors...")    
+scaler = pd.read_csv('scaler.csv')
+merge_scale = pd.DataFrame([scale_guide]).T.reset_index()
+merge_scale.columns = ['House','Scale']
+merge_scale['App'] = id
+out = pd.merge(scaler, merge_scale, on=['House', 'App', 'Scale'], how='outer')
+out.to_csv('scaler.csv', index=False)
+
+epsilon = round(110/len(data.index),5)   # I don't know where the 110 comes from, neither does Makonin 
+folds = Folding(data, num_folds)
     
-        print()
-        print('\tCreating compr'
-              'essed SSHMM...')
-        incro = 1 / precision
-        sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs/precision + incro, incro)])
+for (fold, priors, testing) in folds: 
+    
+    del testing
+    tm_start = time() 
+    
+    print()
+    print('\tInitial epsilon is %12.6f' % epsilon)
+    print("\tMaximum Obs fed is: ", max_obs)
+    print('\tCreating load PMFs and finding load states...')
+    print('\t\tMax partitions per load =', max_states)
+    pmfs = []
+    for id in ids: 
+        pmfs.append(EmpiricalPMF(id, max_obs, list(priors[id]),verbose=False))
+        pmfs[-1].quantize(max_states, epsilon)
         
-        print('\t\tConverting DataFrame in to obs/hidden lists...')
-        obs_id = list(priors)[0]
-        obs = list(priors[obs_id])
-        hidden = [i for i in priors[ids].to_records(index=False)]
-        
-        sshmm.build(obs, hidden)
-        sshmms.append(sshmm)
-        
-        train_times.append((time() - tm_start) / 60)
+
+    print()
+    print('\tCreating compr'
+          'essed SSHMM...')
+    incro = 1 / precision
+    sshmm = SuperStateHMM(pmfs, [i for i in frange(0, max_obs/precision + incro, incro)])
+    
+    print('\t\tConverting DataFrame in to obs/hidden lists...')
+    obs_id = list(priors)[0]
+    obs = list(priors[obs_id])
+    hidden = [i for i in priors[ids].to_records(index=False)]
+    
+    sshmm.build(obs, hidden)
+    sshmms.append(sshmm)
+    
+    train_times.append((time() - tm_start) / 60)
 
 print()
 print('Train Time was', round(sum(train_times), 2), ' min (avg ', round(sum(train_times) / len(train_times), 2), ' min/fold).')
